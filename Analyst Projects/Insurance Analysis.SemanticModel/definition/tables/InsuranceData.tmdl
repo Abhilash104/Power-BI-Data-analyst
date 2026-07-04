@@ -1,0 +1,173 @@
+table InsuranceData
+	lineageTag: 10d063cb-4d55-44df-a9e7-e5e2c8ac541f
+
+	column PolicyNumber
+		dataType: string
+		lineageTag: 5b586f7c-4722-4ae2-84b8-b0402157146e
+		summarizeBy: none
+		sourceColumn: PolicyNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerID
+		dataType: string
+		lineageTag: cc0d7965-298c-47a8-9890-38ccc1a6213c
+		summarizeBy: none
+		sourceColumn: CustomerID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Gender
+		dataType: string
+		lineageTag: 555c2aaf-c177-4e87-ad83-611ddda68bd2
+		summarizeBy: none
+		sourceColumn: Gender
+
+		annotation SummarizationSetBy = User
+
+	column Age
+		dataType: int64
+		formatString: 0
+		lineageTag: 2143ee9d-d3a7-4094-a91e-ab9517e6a96d
+		summarizeBy: sum
+		sourceColumn: Age
+
+		annotation SummarizationSetBy = Automatic
+
+	column PolicyType
+		dataType: string
+		lineageTag: c7868cdc-cfdf-4831-9f5e-1e85360a5a78
+		summarizeBy: none
+		sourceColumn: PolicyType
+
+		annotation SummarizationSetBy = Automatic
+
+	column PolicyStartDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b6469019-edde-42e9-9645-6f0524d56c1b
+		summarizeBy: none
+		sourceColumn: PolicyStartDate
+
+		variation Variation
+			isDefault
+			relationship: b99e7a6a-5349-4325-936e-b59c0a5f33a2
+			defaultHierarchy: LocalDateTable_d222c03f-1c68-4cc1-9333-77f5ab00a45d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column PolicyEndDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b21c3d4d-cdf3-40b0-9613-79077ca2c54c
+		summarizeBy: none
+		sourceColumn: PolicyEndDate
+
+		variation Variation
+			isDefault
+			relationship: 85ce2998-90c4-4773-8ac7-3924c2bc0529
+			defaultHierarchy: LocalDateTable_dc44b0a0-5754-4f8d-936e-d9e39a1356c6.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column PremiumAmount
+		dataType: double
+		lineageTag: 6dbd3d81-7cc1-46ae-bf50-ac5dc30fbc2d
+		summarizeBy: sum
+		sourceColumn: PremiumAmount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CoverageAmount
+		dataType: double
+		lineageTag: 73309e4c-2b3f-455c-b324-b0120ca25185
+		summarizeBy: sum
+		sourceColumn: CoverageAmount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ClaimNumber
+		dataType: string
+		lineageTag: 5e1e5101-6c75-4dc2-860f-6d329f1ea394
+		summarizeBy: none
+		sourceColumn: ClaimNumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column ClaimDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e219c41d-5195-4ea2-bb31-41c671b38632
+		summarizeBy: none
+		sourceColumn: ClaimDate
+
+		variation Variation
+			isDefault
+			relationship: 6bdd71bc-4107-41c6-968f-3673e02d0ed0
+			defaultHierarchy: LocalDateTable_c67c7425-7039-4201-adef-613cd20ebb3f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ClaimAmount
+		dataType: double
+		lineageTag: bf7bcb3e-c448-4575-b65f-9df387c95221
+		summarizeBy: sum
+		sourceColumn: ClaimAmount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ClaimStatus
+		dataType: string
+		lineageTag: 8a835ebf-df6c-4075-8ebf-bc98e3f8a778
+		summarizeBy: none
+		sourceColumn: ClaimStatus
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Age Group' =
+			SWITCH(TRUE(),
+			                  InsuranceData[Age]<= 24, "Young Adult",
+			                  'InsuranceData'[Age]<=60, "Adult",
+			                  "Elder")
+		lineageTag: 3387d2a5-73da-46b6-a49a-a0f2e66880f5
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column Active/Inactive
+		dataType: string
+		lineageTag: 41ff1447-1306-48ef-a275-0d440aee79e0
+		summarizeBy: none
+		sourceColumn: Active/Inactive
+
+		annotation SummarizationSetBy = Automatic
+
+	partition InsuranceData = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Databases("LAPTOP-JDE1S40N\SQLEXPRESS"),
+				    InsuranceDB = Source{[Name="InsuranceDB"]}[Data],
+				    dbo_InsuranceData = InsuranceDB{[Schema="dbo",Item="InsuranceData"]}[Data],
+				    #"Sorted Rows" = Table.Sort(dbo_InsuranceData,{{"Age", Order.Descending}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Sorted Rows",{{"ClaimDate", type date}}),
+				    #"Added Conditional Column" = Table.AddColumn(#"Changed Type", "Active/Inactive", each if [PolicyEndDate] <= #date(2024, 12, 10) then "In Active" else "Active")
+				in
+				    #"Added Conditional Column"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,24 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-IN
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["InsuranceData"]
+
+ref table InsuranceData
+ref table DateTableTemplate_69856c23-39d6-4fb8-ab1f-3337d81999ea
+ref table LocalDateTable_d222c03f-1c68-4cc1-9333-77f5ab00a45d
+ref table LocalDateTable_dc44b0a0-5754-4f8d-936e-d9e39a1356c6
+ref table LocalDateTable_c67c7425-7039-4201-adef-613cd20ebb3f
+
+ref role 'Health Role'
+ref role 'Travel Role'
+ref role 'Auto Role'
+
+ref cultureInfo en-US
+
